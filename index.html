@@ -193,8 +193,8 @@ function escapeHtml(str) {
 
 async function supabase(method, table, body, filter) {
   const url = filter
-    ? `$https://avmsnlrceumdcbeealzz.supabase.co/rest/v1/${table}?${filter}`
-    : `$https://avmsnlrceumdcbeealzz.supabase.co/rest/v1/${table}`;
+    ? `${SUPABASE_URL}/rest/v1/${table}?${filter}`
+    : `${SUPABASE_URL}/rest/v1/${table}`;
   const res = await fetch(url, {
     method,
     headers: {
@@ -377,7 +377,7 @@ async function likeComment(id, btn) {
 
   try {
     const [cur] = await supabase('GET', 'comments', null, `id=eq.${id}&select=likes`);
-    await fetch(`$https://avmsnlrceumdcbeealzz.supabase.co/rest/v1/comments?id=eq.${id}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/comments?id=eq.${id}`, {
       method: 'PATCH',
       headers: {
         'apikey': SUPABASE_KEY,
