@@ -30,6 +30,10 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
 .news-card:hover{background:#f8faff}
 .news-card:last-child{border-bottom:none}
 .news-skeleton{animation:pulse 1.5s infinite;background:#f0f4ff;border-radius:8px;height:18px;margin-bottom:14px}
+.admin-delete-btn{background:none;border:none;color:#ef4444;font-size:0.7rem;cursor:pointer;padding:2px 6px;border-radius:4px;transition:background .15s}
+.admin-delete-btn:hover{background:#fee2e2}
+.admin-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.admin-modal.open{display:flex}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .line-clamp-2{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .profile-placeholder{width:100%;height:100%;background:linear-gradient(135deg,#dbeafe 0%,#bfdbfe 100%);display:flex;align-items:center;justify-content:center;font-size:5rem;color:#93c5fd}
@@ -99,7 +103,7 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
 
   <!-- ⑦ 댓글 -->
   <div class="mb-10">
-    <h2 class="text-xl font-bold mb-4 flex items-center"><i class="bi bi-chat-dots text-minjoo me-2"></i> 의원님께 한마디</h2>
+    <h2 class="text-xl font-bold mb-4 flex items-center justify-between"><span><i class="bi bi-chat-dots text-minjoo me-2"></i> 의원님께 한마디</span><button onclick="isAdmin()?adminLogout():showAdminModal()" id="admin-lock-btn" class="text-gray-300 hover:text-gray-500 transition text-sm"><i class="bi bi-lock" id="admin-lock-icon"></i></button></h2>
     <div class="card-shadow p-5 bg-gray-50 mb-6">
       <input  class="field mb-3" id="comment-name"    type="text" placeholder="성함 (예: 구갈동 주민)"/>
       <textarea class="field mb-3" id="comment-content" rows="3" placeholder="따뜻한 응원의 한마디를 남겨주세요."></textarea>
@@ -137,6 +141,19 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
 
 </div>
 
+<!-- 관리자 로그인 모달 -->
+<div class="admin-modal" id="admin-modal">
+  <div class="bg-white rounded-2xl p-6 w-80 shadow-xl">
+    <h3 class="font-bold text-gray-800 mb-4 text-center">관리자 로그인</h3>
+    <input type="password" id="admin-pwd-input" class="field mb-3" placeholder="비밀번호를 입력하세요" onkeydown="if(event.key==='Enter')doAdminLogin()"/>
+    <p id="admin-login-error" class="text-red-500 text-xs mb-3 hidden">비밀번호가 올바르지 않습니다.</p>
+    <div class="flex gap-2">
+      <button onclick="doAdminLogin()" class="flex-1 bg-minjoo text-white py-2 rounded-lg font-bold hover:bg-blue-700 transition">로그인</button>
+      <button onclick="hideAdminModal()" class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg font-bold hover:bg-gray-200 transition">취소</button>
+    </div>
+  </div>
+</div>
+
 <!-- ⑧ 플로팅 버튼 -->
 <div class="floating-cta flex flex-col gap-2">
   <a class="flex items-center justify-center gap-2 bg-minjoo text-white py-4 rounded-full font-bold shadow-xl hover:scale-[1.02] active:scale-95 transition-all text-sm"
@@ -154,6 +171,42 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
 const SUPABASE_URL = 'https://avmsnlrceumdcbeealzz.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2bXNubHJjZXVtZGNiZWVhbHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjMyMDgsImV4cCI6MjA5MjIzOTIwOH0.hjkKy0Vq5Y2CHN4w23J7a75mhYChpusYXPZUDshcN-k';
 const NEWS_FN_URL  = '/api/news';
+const ADMIN_HASH   = 'a9776e9d2233d5abc70a956220cb3e64e4dc15164048ca17c3359acba5eff481';
+
+function isAdmin() { return sessionStorage.getItem('civic_admin') === '1'; }
+
+async function hashPwd(pwd) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pwd));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function showAdminModal() {
+  document.getElementById('admin-modal').classList.add('open');
+  document.getElementById('admin-pwd-input').value='';
+  document.getElementById('admin-login-error').classList.add('hidden');
+  setTimeout(()=>document.getElementById('admin-pwd-input').focus(), 100);
+}
+
+function hideAdminModal() { document.getElementById('admin-modal').classList.remove('open'); }
+
+async function doAdminLogin() {
+  const pwd = document.getElementById('admin-pwd-input').value;
+  const hash = await hashPwd(pwd);
+  if (hash === ADMIN_HASH) {
+    sessionStorage.setItem('civic_admin','1');
+    hideAdminModal();
+    document.getElementById('admin-lock-icon').className='bi bi-unlock-fill text-minjoo';
+    await loadComments();
+  } else {
+    document.getElementById('admin-login-error').classList.remove('hidden');
+  }
+}
+
+function adminLogout() {
+  sessionStorage.removeItem('civic_admin');
+  document.getElementById('admin-lock-icon').className='bi bi-lock';
+  loadComments();
+}
 
 function escapeHtml(str) {
   return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -169,7 +222,10 @@ async function sbFetch(method, table, body, filter) {
   return res.json();
 }
 
-document.addEventListener('DOMContentLoaded', () => { loadNews(); loadComments(); });
+document.addEventListener('DOMContentLoaded', () => {
+  loadNews(); loadComments();
+  if (isAdmin()) document.getElementById('admin-lock-icon').className='bi bi-unlock-fill text-minjoo';
+});
 
 async function loadNews() {
   const list = document.getElementById('news-list');
@@ -217,7 +273,9 @@ function renderComments(comments, replies) {
     const repliesHtml=myReplies.map(r=>
       '<div class="reply-item"><div class="flex justify-between mb-1">'
       +'<span class="font-bold text-gray-700">'+escapeHtml(r.name)+'</span>'
-      +'<span class="text-xs text-gray-400">'+new Date(r.created_at).toLocaleDateString()+'</span></div>'
+      +'<div class="flex items-center gap-2"><span class="text-xs text-gray-400">'+new Date(r.created_at).toLocaleDateString()+'</span>'
+      +(isAdmin()?'<button class="admin-delete-btn" onclick="deleteReply('+r.id+')"><i class="bi bi-trash3"></i> 삭제</button>':'')
+      +'</div></div>'
       +'<p class="text-gray-600">'+escapeHtml(r.content)+'</p></div>'
     ).join('');
     const liked = likedSet.has(c.id) ? ' liked' : '';
@@ -229,15 +287,18 @@ function renderComments(comments, replies) {
       +'<div class="flex gap-3 items-center">'
       +'<button class="like-btn'+liked+'" id="like-btn-'+c.id+'" onclick="likeComment('+c.id+', this)">'
       +'<i class="bi bi-hand-thumbs-up me-1"></i>좋아요 <span class="like-count">'+c.likes+'</span></button>'
-      +'<button class="reply-toggle-btn" onclick="toggleReplyForm('+c.id+')">'
-      +'<i class="bi bi-reply me-1"></i>답글 ('+myReplies.length+')</button></div>'
+      +(isAdmin()?'<button class="reply-toggle-btn" onclick="toggleReplyForm('+c.id+')">'
+      +'<i class="bi bi-reply me-1"></i>답글 ('+myReplies.length+')</button>'
+      +'<button class="admin-delete-btn" onclick="deleteComment('+c.id+')"><i class="bi bi-trash3"></i> 삭제</button>':'')
+      +'</div>'
       +'<div id="replies-'+c.id+'">'+repliesHtml+'</div>'
-      +'<div class="reply-form" id="reply-form-'+c.id+'">'
-      +'<input class="field mb-2" id="reply-name-'+c.id+'" type="text" placeholder="성함"/>'
+      +(isAdmin()?'<div class="reply-form" id="reply-form-'+c.id+'">'
+      +'<input class="field mb-2" id="reply-name-'+c.id+'" type="text" placeholder="성함" value="전자영 의원"/>'
       +'<textarea class="field mb-2" id="reply-content-'+c.id+'" rows="2" placeholder="답글을 입력하세요."></textarea>'
       +'<button class="bg-minjoo text-white text-sm px-4 py-2 rounded-lg font-bold hover:bg-blue-700 transition" onclick="submitReply('+c.id+')">답글 등록</button>'
       +'<button class="ml-2 text-gray-400 text-sm px-3 py-2 rounded-lg hover:bg-gray-100 transition" onclick="toggleReplyForm('+c.id+')">취소</button>'
-      +'<p id="reply-error-'+c.id+'" class="text-red-500 text-xs mt-1 hidden"></p></div></div>';
+      +'<p id="reply-error-'+c.id+'" class="text-red-500 text-xs mt-1 hidden"></p></div>':'')
+      +'</div>';
   }).join('');
   restoreLikeState();
 }
@@ -273,6 +334,18 @@ async function likeComment(id, btn) {
 }
 
 function toggleReplyForm(id) { document.getElementById('reply-form-'+id)?.classList.toggle('open'); }
+
+async function deleteComment(id) {
+  if (!isAdmin() || !confirm('이 메시지를 삭제하시겠습니까?')) return;
+  await fetch(SUPABASE_URL+'/rest/v1/comments?apikey='+SUPABASE_KEY+'&id=eq.'+id, {method:'DELETE'});
+  await loadComments();
+}
+
+async function deleteReply(id) {
+  if (!isAdmin() || !confirm('이 답글을 삭제하시겠습니까?')) return;
+  await fetch(SUPABASE_URL+'/rest/v1/replies?apikey='+SUPABASE_KEY+'&id=eq.'+id, {method:'DELETE'});
+  await loadComments();
+}
 
 async function submitReply(commentId) {
   const nameEl=document.getElementById('reply-name-'+commentId);
