@@ -182,7 +182,6 @@ async function loadNews() {
     list.innerHTML = data.articles.map(a => {
       const date = new Date(a.pubDate).toLocaleDateString('ko-KR',{month:'long',day:'numeric'});
       return '<a href="'+escapeHtml(a.link)+'" target="_blank" class="news-card">'
-        +'<span class="text-xs font-bold text-minjoo shrink-0">'+escapeHtml(a.source)+'</span>'
         +'<span class="text-sm text-gray-800 flex-1 leading-snug">'+escapeHtml(a.title)+'</span>'
         +'<span class="text-xs text-gray-400 shrink-0">'+date+'</span>'
         +'</a>';
