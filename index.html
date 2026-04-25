@@ -76,6 +76,13 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
   </div>
 </section>
 
+<!-- 공유 버튼 -->
+<div class="px-6 mb-8 max-w-md mx-auto">
+  <button onclick="shareThisPage()" class="w-full flex items-center justify-center gap-2 bg-white border-2 border-minjoo text-minjoo py-3 rounded-full font-bold shadow hover:bg-blue-50 active:scale-95 transition-all text-sm">
+    <i class="bi bi-share-fill"></i> 이 페이지 공유하기
+  </button>
+</div>
+
 <div class="max-w-md mx-auto px-6">
 
   <!-- ③ 프로필 -->
@@ -167,6 +174,22 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
 </div>
 
 <script>
+
+async function shareThisPage() {
+  const data = { title: '전자영 경기도의원 후보', text: '성실하게! 확실하게! 실력있게! 전자영 후보를 소개합니다.', url: location.href };
+  if (navigator.share) {
+    try { await navigator.share(data); } catch(e) {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      const btn = event.currentTarget;
+      const original = btn.innerHTML;
+      btn.innerHTML = '<i class="bi bi-check2"></i> 링크가 복사되었습니다!';
+      btn.disabled = true;
+      setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
+    } catch(e) {}
+  }
+}
 
 const SUPABASE_URL = 'https://avmsnlrceumdcbeealzz.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2bXNubHJjZXVtZGNiZWVhbHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjMyMDgsImV4cCI6MjA5MjIzOTIwOH0.hjkKy0Vq5Y2CHN4w23J7a75mhYChpusYXPZUDshcN-k';
