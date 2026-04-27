@@ -108,6 +108,25 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
     </div>
   </div>
 
+  <!-- 후원계좌 -->
+  <div class="mb-10">
+    <h2 class="text-xl font-bold mb-4 flex items-center"><i class="bi bi-heart-fill text-minjoo me-2"></i> 후원 계좌</h2>
+    <div class="card-shadow p-5 bg-white">
+      <p class="text-sm text-gray-500 mb-4">전자영 도의원의 활동을 응원해 주세요.</p>
+      <div class="flex items-center justify-between bg-blue-50 rounded-xl px-4 py-3 mb-3">
+        <div>
+          <p class="text-xs text-gray-500 mb-1">농협</p>
+          <p class="text-lg font-bold text-gray-800 tracking-wider">301-0373-3035-61</p>
+          <p class="text-xs text-gray-500 mt-1">예금주: 경기도의회의원전자영후원회</p>
+        </div>
+        <button id="copy-btn" onclick="copyAccount()" class="flex items-center gap-1 bg-minjoo text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shrink-0">
+          <i class="bi bi-copy" id="copy-icon"></i>
+          <span id="copy-label">복사</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- ⑦ 댓글 -->
   <div class="mb-10">
     <h2 class="text-xl font-bold mb-4 flex items-center justify-between"><span><i class="bi bi-chat-dots text-minjoo me-2"></i> 의원님께 한마디</span><button onclick="isAdmin()?adminLogout():showAdminModal()" id="admin-lock-btn" class="text-gray-300 hover:text-gray-500 transition text-sm"><i class="bi bi-lock" id="admin-lock-icon"></i></button></h2>
@@ -174,6 +193,24 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
 </div>
 
 <script>
+
+function copyAccount() {
+  navigator.clipboard.writeText('301-0373-3035-61').then(() => {
+    const btn = document.getElementById('copy-btn');
+    const icon = document.getElementById('copy-icon');
+    const label = document.getElementById('copy-label');
+    icon.className = 'bi bi-check2';
+    label.textContent = '복사됨';
+    btn.classList.replace('bg-minjoo', 'bg-green-500');
+    btn.classList.replace('hover:bg-blue-700', 'hover:bg-green-600');
+    setTimeout(() => {
+      icon.className = 'bi bi-copy';
+      label.textContent = '복사';
+      btn.classList.replace('bg-green-500', 'bg-minjoo');
+      btn.classList.replace('hover:bg-green-600', 'hover:bg-blue-700');
+    }, 2000);
+  });
+}
 
 async function shareThisPage() {
   const data = { title: '전자영 경기도의원 후보', text: '성실하게! 확실하게! 실력있게! 전자영 후보를 소개합니다.', url: location.href };
