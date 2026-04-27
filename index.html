@@ -76,6 +76,13 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
   </div>
 </section>
 
+<!-- 공유 버튼 -->
+<div class="px-6 mb-8 max-w-md mx-auto">
+  <button onclick="shareThisPage()" class="w-full flex items-center justify-center gap-2 bg-white border-2 border-minjoo text-minjoo py-3 rounded-full font-bold shadow hover:bg-blue-50 active:scale-95 transition-all text-sm">
+    <i class="bi bi-share-fill"></i> 이 페이지 공유하기
+  </button>
+</div>
+
 <div class="max-w-md mx-auto px-6">
 
   <!-- ③ 프로필 -->
@@ -98,6 +105,25 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
       <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg"><span class="text-minjoo font-bold">02</span><p class="text-sm">더 나은 구갈/상갈을 위한 생활 밀착형 정책을 수립합니다.</p></div>
       <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg"><span class="text-minjoo font-bold">03</span><p class="text-sm">용인의 미래를 위한 혁신적 성장을 도모하겠습니다.</p></div>
       <div class="flex items-start gap-3 p-4 bg-gray-50 rounded-lg"><span class="text-minjoo font-bold">04</span><p class="text-sm">경기도의 자부심을 높이는 투명한 의정 활동을 약속합니다.</p></div>
+    </div>
+  </div>
+
+  <!-- 후원계좌 -->
+  <div class="mb-10">
+    <h2 class="text-xl font-bold mb-4 flex items-center"><i class="bi bi-heart-fill text-minjoo me-2"></i> 후원 계좌</h2>
+    <div class="card-shadow p-5 bg-white">
+      <p class="text-sm text-gray-500 mb-4">전자영 도의원의 활동을 응원해 주세요.</p>
+      <div class="flex items-center justify-between bg-blue-50 rounded-xl px-4 py-3 mb-3">
+        <div>
+          <p class="text-xs text-gray-500 mb-1">농협</p>
+          <p class="text-lg font-bold text-gray-800 tracking-wider">301-0373-3035-61</p>
+          <p class="text-xs text-gray-500 mt-1">예금주: 경기도의회의원전자영후원회</p>
+        </div>
+        <button id="copy-btn" onclick="copyAccount()" class="flex items-center gap-1 bg-minjoo text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-blue-700 active:scale-95 transition-all shrink-0">
+          <i class="bi bi-copy" id="copy-icon"></i>
+          <span id="copy-label">복사</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -167,6 +193,40 @@ body{font-family:'Pretendard',sans-serif;background:#fff;color:#333;word-break:k
 </div>
 
 <script>
+
+function copyAccount() {
+  navigator.clipboard.writeText('301-0373-3035-61').then(() => {
+    const btn = document.getElementById('copy-btn');
+    const icon = document.getElementById('copy-icon');
+    const label = document.getElementById('copy-label');
+    icon.className = 'bi bi-check2';
+    label.textContent = '복사됨';
+    btn.classList.replace('bg-minjoo', 'bg-green-500');
+    btn.classList.replace('hover:bg-blue-700', 'hover:bg-green-600');
+    setTimeout(() => {
+      icon.className = 'bi bi-copy';
+      label.textContent = '복사';
+      btn.classList.replace('bg-green-500', 'bg-minjoo');
+      btn.classList.replace('hover:bg-green-600', 'hover:bg-blue-700');
+    }, 2000);
+  });
+}
+
+async function shareThisPage() {
+  const data = { title: '전자영 경기도의원 후보', text: '성실하게! 확실하게! 실력있게! 전자영 후보를 소개합니다.', url: location.href };
+  if (navigator.share) {
+    try { await navigator.share(data); } catch(e) {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      const btn = event.currentTarget;
+      const original = btn.innerHTML;
+      btn.innerHTML = '<i class="bi bi-check2"></i> 링크가 복사되었습니다!';
+      btn.disabled = true;
+      setTimeout(() => { btn.innerHTML = original; btn.disabled = false; }, 2000);
+    } catch(e) {}
+  }
+}
 
 const SUPABASE_URL = 'https://avmsnlrceumdcbeealzz.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2bXNubHJjZXVtZGNiZWVhbHp6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2NjMyMDgsImV4cCI6MjA5MjIzOTIwOH0.hjkKy0Vq5Y2CHN4w23J7a75mhYChpusYXPZUDshcN-k';
